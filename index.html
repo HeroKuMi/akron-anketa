@@ -1193,47 +1193,45 @@ function safeFileName(str){
   return (cleaned || "player").slice(0, 60);
 }
 
-// Full questionnaire, two monolingual passes stacked one after another (RU
-// block, then SR block) instead of one row per question with both languages
-// crammed into a single field name. A field `name` can't contain a real
-// newline — the browser has to escape it as %0D%0A when it builds the
-// multipart request, and formsubmit's table template doesn't decode that
-// back, which is what produced the "ФИО_(полностью)%0D%0A(...)" garbage.
-// Keeping each row single-language also halves the label width, which is
-// what was stretching the table out.
+// Full questionnaire, one row per question — same field count as the version
+// that actually delivered (~46 fields). Each label is RU and SR on ONE
+// line, slash-separated, instead of the two full stacked RU+SR blocks tried
+// next: doubling the field count to ~91 and reusing one field name twice
+// for a divider is very likely what got the email silently dropped (no
+// error surfaced client-side; formsubmit gave no reason, which is the
+// signature of a spam/field-count heuristic, not a code bug).
+// The ACTUAL cause of the "ФИО_(полностью)%0D%0A(...)" garbage is fixed
+// here too: a field `name` can't contain a real newline character — the
+// browser has to escape it as %0D%0A when building the multipart request,
+// and formsubmit's table template never decodes that back. Using " / " on
+// a single line avoids that entirely, with no extra fields needed.
 function shortLabel(str, max){
   const one = String(str).replace(/\s+/g," ").trim();
   return one.length > max ? one.slice(0, max-1).trim() + "…" : one;
 }
-function buildLangBlock(t, consentValue){
+function buildSummaryFields(){
+  const tRu = T.ru, tSr = T.sr;
   const rows = [];
+  rows.push({ name:"Язык анкеты", value: lang.toUpperCase() });
   STEP_META.forEach((meta,stepIdx)=>{
-    const stepTitle = t===T.ru ? meta.ru[0] : meta.sr[0];
-    rows.push({ name:`${stepIdx+1}. ${stepTitle.toUpperCase()}`, value:"———" });
+    rows.push({ name:`${stepIdx+1}. ${meta.ru[0].toUpperCase()} / ${meta.sr[0].toUpperCase()}`, value:"———" });
     FIELDS.filter(f=>f.step===stepIdx).forEach(f=>{
-      let label;
+      let nameRu, nameSr;
       if(f.type==="pair"){
-        label = f.parts.map(p=>(t.fields[p]||{}).label||p).join(" / ");
+        nameRu = f.parts.map(p=>(tRu.fields[p]||{}).label||p).join(" / ");
+        nameSr = f.parts.map(p=>(tSr.fields[p]||{}).label||p).join(" / ");
       } else {
-        label = (t.fields[f.id]||{}).label || f.id;
+        nameRu = (tRu.fields[f.id]||{}).label || f.id;
+        nameSr = (tSr.fields[f.id]||{}).label || f.id;
       }
-      const val = fmtValueWithT(f, t);
+      const val = fmtValueWithT(f, tRu);
       rows.push({
-        name: shortLabel(label, 40),
+        name: `${shortLabel(nameRu, 30)} / ${shortLabel(nameSr, 30)}`,
         value: val && String(val).trim() ? String(val) : "—"
       });
     });
   });
-  rows.push({ name: t===T.ru ? "Согласие подтверждено" : "Saglasnost potvrđena", value: consentValue });
-  return rows;
-}
-function buildSummaryFields(){
-  const rows = [];
-  rows.push({ name:"Язык анкеты", value: lang.toUpperCase() });
-  rows.push({ name:"═════════════", value:"РУССКИЙ" });
-  rows.push(...buildLangBlock(T.ru, answers.consent ? T.ru.yesLabel : T.ru.noLabel));
-  rows.push({ name:"═════════════", value:"SRPSKI" });
-  rows.push(...buildLangBlock(T.sr, answers.consent ? T.sr.yesLabel : T.sr.noLabel));
+  rows.push({ name:`Согласие подтверждено / Saglasnost potvrđena`, value: answers.consent ? tRu.yesLabel : tRu.noLabel });
   return rows;
 }
 
