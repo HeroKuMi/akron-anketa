@@ -288,7 +288,16 @@
     <input type="hidden" name="_captcha" value="false">
     <input type="hidden" name="_subject" id="formSubject" value="">
     <div id="dynamicFields"></div>
-    <div id="dynamicFiles"></div>
+    <input type="file" name="attachment1" id="att1" disabled>
+    <input type="file" name="attachment2" id="att2" disabled>
+    <input type="file" name="attachment3" id="att3" disabled>
+    <input type="file" name="attachment4" id="att4" disabled>
+    <input type="file" name="attachment5" id="att5" disabled>
+    <input type="file" name="attachment6" id="att6" disabled>
+    <input type="file" name="attachment7" id="att7" disabled>
+    <input type="file" name="attachment8" id="att8" disabled>
+    <input type="file" name="attachment9" id="att9" disabled>
+    <input type="file" name="attachment10" id="att10" disabled>
   </form>
 </div>
 
@@ -1202,29 +1211,34 @@ function slugName(str){
   return out.replace(/-+/g,"-").replace(/^-|-$/g,"").slice(0,40) || "player";
 }
 
-// Full questionnaire as one readable "question — answer" row per field
-// (RU / SR labels, player's answers exactly as typed). This goes straight into
-// the email body via FormSubmit's table template.
+// Full questionnaire, one row per question. Labels are RU-only and trimmed:
+// the previous "русский / srpski" labels doubled every row's width, which is what
+// stretched the email table out of shape. Answers stay exactly as the player typed.
+function shortLabel(str, max){
+  const one = String(str).replace(/\s+/g," ").trim();
+  return one.length > max ? one.slice(0, max-1).trim() + "…" : one;
+}
 function buildSummaryFields(){
-  const tRu = T.ru, tSr = T.sr;
+  const tRu = T.ru;
   const rows = [];
-  rows.push({ name:"Язык заполнения / Fill language", value: lang });
+  rows.push({ name:"Язык анкеты", value: lang.toUpperCase() });
   STEP_META.forEach((meta,stepIdx)=>{
-    rows.push({ name:`—— ${stepIdx+1}. ${meta.ru[0]} / ${meta.sr[0]} ——`, value:" " });
+    rows.push({ name:`${stepIdx+1}. ${meta.ru[0].toUpperCase()}`, value:"———" });
     FIELDS.filter(f=>f.step===stepIdx).forEach(f=>{
       let name;
       if(f.type==="pair"){
         name = f.parts.map(p=>(tRu.fields[p]||{}).label||p).join(" / ");
       } else {
-        const labelRu = (tRu.fields[f.id]||{}).label || f.id;
-        const labelSr = (tSr.fields[f.id]||{}).label || f.id;
-        name = `${labelRu} / ${labelSr}`;
+        name = (tRu.fields[f.id]||{}).label || f.id;
       }
       const val = fmtValueWithT(f, tRu);
-      rows.push({ name, value: val && String(val).trim() ? String(val) : "—" });
+      rows.push({
+        name: shortLabel(name, 60),
+        value: val && String(val).trim() ? String(val) : "—"
+      });
     });
   });
-  rows.push({ name:"Согласие / Consent", value: answers.consent ? tRu.yesLabel : tRu.noLabel });
+  rows.push({ name:"Согласие подтверждено", value: answers.consent ? tRu.yesLabel : tRu.noLabel });
   return rows;
 }
 
@@ -1267,22 +1281,22 @@ async function submitToClub(){
       dyn.appendChild(inp);
     });
 
-    // Attach the player's files as the ORIGINALS they uploaded — one input per file,
-    // no conversion. Field names are kept plain ASCII ("attachment", "attachment2", …)
-    // exactly as FormSubmit's own docs show: non-ASCII field names on the file parts
-    // make their parser drop the whole submission silently.
-    const dynFiles = document.getElementById("dynamicFiles");
-    dynFiles.innerHTML = "";
+    // Load the player's files (originals, unconverted) into the statically declared
+    // attachment slots. Unused slots stay disabled so they aren't submitted at all —
+    // empty file parts are a common reason a backend rejects a whole multipart post.
     const medical = fileStore.medicalDocs || [];
     const gps = fileStore.gpsFile || [];
     const allFiles = [
       ...medical.map(f=>({file:f, tag:"medical"})),
       ...gps.map(f=>({file:f, tag:"gps"})),
     ];
+    const MAX_SLOTS = 10;
+    const overflow = allFiles.slice(MAX_SLOTS).map(x=>x.file.name);
+    const toSend = allFiles.slice(0, MAX_SLOTS);
 
-    // FormSubmit caps ALL attachments at 10MB combined; over the limit it silently
-    // sends nothing at all, so check up front and tell the player what to do.
-    const totalBytes = allFiles.reduce((sum,x)=>sum + (x.file.size||0), 0);
+    // Most email relays cap all attachments at ~10MB combined; past the limit they
+    // typically drop the whole submission with no error, so check up front.
+    const totalBytes = toSend.reduce((sum,x)=>sum + (x.file.size||0), 0);
     if(totalBytes > 9 * 1024 * 1024){
       const mb = (totalBytes / (1024*1024)).toFixed(1);
       document.getElementById("sendStatus").style.display = "none";
@@ -1295,30 +1309,32 @@ async function submitToClub(){
     }
 
     const counters = {};
-    allFiles.forEach((item, i)=>{
+    const attachedNames = [];
+    for(let slot = 1; slot <= MAX_SLOTS; slot++){
+      const input = document.getElementById("att" + slot);
+      const item = toSend[slot-1];
+      if(!item){ input.disabled = true; input.value = ""; continue; }
       const { file, tag } = item;
       counters[tag] = (counters[tag] || 0) + 1;
       const ext = (file.name.split(".").pop()||"dat").toLowerCase();
       const newName = `${tag}-${slug}-${counters[tag]}.${ext}`;
-      const input = document.createElement("input");
-      input.type = "file";
-      input.name = i === 0 ? "attachment" : `attachment${i+1}`;
       const dt = new DataTransfer();
       dt.items.add(new File([file], newName, { type: file.type || "application/octet-stream" }));
       input.files = dt.files;
-      dynFiles.appendChild(input);
-    });
+      input.disabled = false;
+      attachedNames.push(`${newName} (${file.name})`);
+    }
 
-    // list what was attached, so the email body itself records the filenames
-    if(allFiles.length){
+    if(attachedNames.length){
       const inp = document.createElement("input");
-      inp.type = "hidden";
-      inp.name = "Attached files";
-      inp.value = allFiles.map((x,i)=>{
-        const ext = (x.file.name.split(".").pop()||"dat").toLowerCase();
-        const c = allFiles.slice(0,i+1).filter(y=>y.tag===x.tag).length;
-        return `${x.tag}-${slug}-${c}.${ext} (${x.file.name})`;
-      }).join(", ");
+      inp.type = "hidden"; inp.name = "Вложения";
+      inp.value = attachedNames.join("; ");
+      dyn.appendChild(inp);
+    }
+    if(overflow.length){
+      const inp = document.createElement("input");
+      inp.type = "hidden"; inp.name = "НЕ отправлено (превышен лимит 10 файлов)";
+      inp.value = overflow.join("; ");
       dyn.appendChild(inp);
     }
 
