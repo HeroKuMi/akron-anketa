@@ -282,11 +282,12 @@
 
   <p class="autosave-note" data-t="autosaveNote">Ответы автоматически сохраняются на этом устройстве по мере заполнения.</p>
 
-  <iframe name="formsubmit_target" id="formsubmitTarget" style="display:none;" title="submit"></iframe>
-  <form id="realForm" method="POST" enctype="multipart/form-data" target="formsubmit_target" style="display:none;">
-    <input type="hidden" name="_template" value="table">
-    <input type="hidden" name="_captcha" value="false">
-    <input type="hidden" name="_subject" id="formSubject" value="">
+  <iframe name="netlify_target" id="netlifyTarget" style="display:none;" title="submit"></iframe>
+  <form id="realForm" name="akron-anketa" method="POST" data-netlify="true" netlify-honeypot="bot-field"
+        enctype="multipart/form-data" target="netlify_target" style="display:none;">
+    <input type="hidden" name="form-name" value="akron-anketa">
+    <input type="hidden" name="bot-field">
+    <input type="hidden" name="Тема" id="formSubject" value="">
     <div id="dynamicFields"></div>
     <input type="file" name="attachment1" id="att1" disabled>
     <input type="file" name="attachment2" id="att2" disabled>
@@ -381,7 +382,7 @@ ru:{
   sendErrorBody:"Проверьте подключение к интернету и попробуйте ещё раз. Если ошибка повторится, напишите нам на fkakron@yandex.ru.",
   retryBtn:"Попробовать снова",
   tooBigTitle:"Файлы слишком большие",
-  tooBigBody:"Общий размер вложений не должен превышать 9 МБ. Сейчас: {size} МБ. Удалите или сожмите часть файлов и попробуйте снова.",
+  tooBigBody:"Общий размер вложений не должен превышать 7 МБ. Сейчас: {size} МБ. Удалите или сожмите часть файлов и попробуйте снова.",
   emailSubjectPrefix:"Предконтрактный опросник ФК «Акрон»",
   autosaveNote:"Ответы автоматически сохраняются на этом устройстве по мере заполнения. Прикреплённые файлы приложите ещё раз, если перезагрузите страницу.",
   reqNote:"Поля, отмеченные *, обязательны для заполнения.",
@@ -465,7 +466,7 @@ en:{
   sendErrorBody:"Please check your internet connection and try again. If this keeps happening, email us at fkakron@yandex.ru.",
   retryBtn:"Try again",
   tooBigTitle:"Files are too large",
-  tooBigBody:"Total attachment size must be under 9 MB. Right now it is {size} MB. Please remove or compress some files and try again.",
+  tooBigBody:"Total attachment size must be under 7 MB. Right now it is {size} MB. Please remove or compress some files and try again.",
   emailSubjectPrefix:"FC Akron pre-contract questionnaire",
   autosaveNote:"Your answers are saved automatically on this device as you fill in the form. Please re-attach any files if you reload the page.",
   reqNote:"Fields marked with * are required.",
@@ -549,7 +550,7 @@ es:{
   sendErrorBody:"Comprueba tu conexión a internet e inténtalo de nuevo. Si el error persiste, escríbenos a fkakron@yandex.ru.",
   retryBtn:"Intentar de nuevo",
   tooBigTitle:"Archivos demasiado grandes",
-  tooBigBody:"El tamaño total de los adjuntos no debe superar los 9 MB. Ahora es {size} MB. Elimina o comprime algunos archivos e inténtalo de nuevo.",
+  tooBigBody:"El tamaño total de los adjuntos no debe superar los 7 MB. Ahora es {size} MB. Elimina o comprime algunos archivos e inténtalo de nuevo.",
   emailSubjectPrefix:"Cuestionario precontractual FC Akron",
   autosaveNote:"Tus respuestas se guardan automáticamente en este dispositivo a medida que completas el formulario. Vuelve a adjuntar los archivos si recargas la página.",
   reqNote:"Los campos marcados con * son obligatorios.",
@@ -633,7 +634,7 @@ pt:{
   sendErrorBody:"Verifique a sua ligação à internet e tente novamente. Se o erro persistir, escreva-nos para fkakron@yandex.ru.",
   retryBtn:"Tentar novamente",
   tooBigTitle:"Ficheiros demasiado grandes",
-  tooBigBody:"O tamanho total dos anexos não deve exceder 9 MB. Atualmente: {size} MB. Remova ou comprima alguns ficheiros e tente novamente.",
+  tooBigBody:"O tamanho total dos anexos não deve exceder 7 MB. Atualmente: {size} MB. Remova ou comprima alguns ficheiros e tente novamente.",
   emailSubjectPrefix:"Questionário pré-contratual FC Akron",
   autosaveNote:"As suas respostas são guardadas automaticamente neste dispositivo à medida que preenche o formulário. Anexe novamente os ficheiros se recarregar a página.",
   reqNote:"Os campos marcados com * são obrigatórios.",
@@ -717,7 +718,7 @@ sr:{
   sendErrorBody:"Proverite internet konekciju i pokušajte ponovo. Ako se greška ponovi, pišite nam na fkakron@yandex.ru.",
   retryBtn:"Pokušaj ponovo",
   tooBigTitle:"Fajlovi su preveliki",
-  tooBigBody:"Ukupna veličina priloga ne sme preći 9 MB. Trenutno: {size} MB. Uklonite ili smanjite neke fajlove i pokušajte ponovo.",
+  tooBigBody:"Ukupna veličina priloga ne sme preći 7 MB. Trenutno: {size} MB. Uklonite ili smanjite neke fajlove i pokušajte ponovo.",
   emailSubjectPrefix:"Prekontraktni upitnik FK Akron",
   autosaveNote:"Vaši odgovori se automatski čuvaju na ovom uređaju dok popunjavate formular. Priložene fajlove dodajte ponovo ako osvežite stranicu.",
   reqNote:"Polja označena sa * su obavezna.",
@@ -796,8 +797,7 @@ let currentStep = 0;
 let answers = {};
 let fileStore = {}; // real File objects for uploaded documents, kept in memory only (not persisted)
 const STORAGE_KEY = "akron-questionnaire-v1";
-const CLUB_EMAIL = "fkakron@yandex.ru";
-const FORM_ENDPOINT = "https://formsubmit.co/" + CLUB_EMAIL; // classic (non-AJAX) endpoint: the AJAX endpoint silently drops file attachments
+const CLUB_EMAIL = "fkakron@yandex.ru"; // shown in the error screen; actual delivery address is set in the Netlify dashboard (Site settings → Forms → Form notifications)
 
 function defaultAnswers(){
   const a = {};
@@ -1194,21 +1194,11 @@ function fmtValueWithT(f, tLabels){
   return answers[f.id]!=null ? String(answers[f.id]) : "";
 }
 
-// Transliterates the player's name so attachment filenames stay ASCII-safe
-// (Cyrillic and em-dashes in filenames were getting mangled in transit).
-const TRANSLIT = {
-  "а":"a","б":"b","в":"v","г":"g","д":"d","е":"e","ё":"e","ж":"zh","з":"z","и":"i","й":"y",
-  "к":"k","л":"l","м":"m","н":"n","о":"o","п":"p","р":"r","с":"s","т":"t","у":"u","ф":"f",
-  "х":"h","ц":"ts","ч":"ch","ш":"sh","щ":"sch","ъ":"","ы":"y","ь":"","э":"e","ю":"yu","я":"ya",
-  "č":"c","ć":"c","đ":"dj","š":"s","ž":"z","á":"a","é":"e","í":"i","ó":"o","ú":"u","ñ":"n",
-  "ã":"a","õ":"o","ç":"c","â":"a","ê":"e","ô":"o","à":"a"
-};
-function slugName(str){
-  const out = (str||"player").toLowerCase().split("").map(ch=>{
-    if(TRANSLIT[ch] !== undefined) return TRANSLIT[ch];
-    return /[a-z0-9]/.test(ch) ? ch : "-";
-  }).join("");
-  return out.replace(/-+/g,"-").replace(/^-|-$/g,"").slice(0,40) || "player";
+// Keeps the attachment filename readable (player's own name, Cyrillic included,
+// spaces kept) while stripping the handful of characters real filesystems reject.
+function safeFileName(str){
+  const cleaned = (str||"player").replace(/[\/\\:*?"<>|]/g, " ").replace(/\s+/g," ").trim();
+  return (cleaned || "player").slice(0, 60);
 }
 
 // Full questionnaire, one row per question. Labels are RU-only and trimmed:
@@ -1219,26 +1209,31 @@ function shortLabel(str, max){
   return one.length > max ? one.slice(0, max-1).trim() + "…" : one;
 }
 function buildSummaryFields(){
-  const tRu = T.ru;
+  const tRu = T.ru, tSr = T.sr;
   const rows = [];
   rows.push({ name:"Язык анкеты", value: lang.toUpperCase() });
   STEP_META.forEach((meta,stepIdx)=>{
-    rows.push({ name:`${stepIdx+1}. ${meta.ru[0].toUpperCase()}`, value:"———" });
+    rows.push({ name:`${stepIdx+1}. ${meta.ru[0].toUpperCase()}\n(${meta.sr[0]})`, value:"———" });
     FIELDS.filter(f=>f.step===stepIdx).forEach(f=>{
-      let name;
+      let nameRu, nameSr;
       if(f.type==="pair"){
-        name = f.parts.map(p=>(tRu.fields[p]||{}).label||p).join(" / ");
+        nameRu = f.parts.map(p=>(tRu.fields[p]||{}).label||p).join(" / ");
+        nameSr = f.parts.map(p=>(tSr.fields[p]||{}).label||p).join(" / ");
       } else {
-        name = (tRu.fields[f.id]||{}).label || f.id;
+        nameRu = (tRu.fields[f.id]||{}).label || f.id;
+        nameSr = (tSr.fields[f.id]||{}).label || f.id;
       }
       const val = fmtValueWithT(f, tRu);
+      // Serbian sits on its own line, in parentheses, right under the Russian label —
+      // renders as a real line break in most mail clients; if one collapses it, it
+      // still reads fine as "RU (SR)" run together.
       rows.push({
-        name: shortLabel(name, 60),
+        name: `${shortLabel(nameRu, 60)}\n(${shortLabel(nameSr, 60)})`,
         value: val && String(val).trim() ? String(val) : "—"
       });
     });
   });
-  rows.push({ name:"Согласие подтверждено", value: answers.consent ? tRu.yesLabel : tRu.noLabel });
+  rows.push({ name:`Согласие подтверждено\n(Saglasnost potvrđena)`, value: answers.consent ? tRu.yesLabel : tRu.noLabel });
   return rows;
 }
 
@@ -1266,10 +1261,10 @@ async function submitToClub(){
 
   try{
     const name = answers.fullName || "—";
-    const slug = slugName(answers.fullName);
+    const slug = safeFileName(answers.fullName);
 
     const form = document.getElementById("realForm");
-    form.action = FORM_ENDPOINT;
+    form.action = window.location.pathname;
     document.getElementById("formSubject").value = `${t.emailSubjectPrefix} — ${name}`;
 
     // rebuild the readable Q&A rows every time (clears any left over from a previous attempt)
@@ -1297,7 +1292,7 @@ async function submitToClub(){
     // Most email relays cap all attachments at ~10MB combined; past the limit they
     // typically drop the whole submission with no error, so check up front.
     const totalBytes = toSend.reduce((sum,x)=>sum + (x.file.size||0), 0);
-    if(totalBytes > 9 * 1024 * 1024){
+    if(totalBytes > 7 * 1024 * 1024){
       const mb = (totalBytes / (1024*1024)).toFixed(1);
       document.getElementById("sendStatus").style.display = "none";
       const errBox = document.getElementById("sendError");
@@ -1317,7 +1312,9 @@ async function submitToClub(){
       const { file, tag } = item;
       counters[tag] = (counters[tag] || 0) + 1;
       const ext = (file.name.split(".").pop()||"dat").toLowerCase();
-      const newName = `${tag}-${slug}-${counters[tag]}.${ext}`;
+      const tagLabel = tag === "medical" ? "медицинские" : "gps";
+      const numSuffix = counters[tag] > 1 ? ` ${counters[tag]}` : "";
+      const newName = `${slug} — ${tagLabel}${numSuffix}.${ext}`;
       const dt = new DataTransfer();
       dt.items.add(new File([file], newName, { type: file.type || "application/octet-stream" }));
       input.files = dt.files;
@@ -1338,7 +1335,7 @@ async function submitToClub(){
       dyn.appendChild(inp);
     }
 
-    const iframe = document.getElementById("formsubmitTarget");
+    const iframe = document.getElementById("netlifyTarget");
     const loadedInTime = waitForIframeLoad(iframe, 20000);
     form.submit();
     await loadedInTime;
