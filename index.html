@@ -276,7 +276,7 @@
   <div class="senderror" id="sendError" style="display:none;">
     <div class="mark err">!</div>
     <h2 data-t="sendErrorTitle">Не удалось отправить</h2>
-    <p data-t="sendErrorBody">Проверьте подключение к интернету и попробуйте ещё раз. Если ошибка повторится, напишите нам на it@fcakron.ru.</p>
+    <p data-t="sendErrorBody">Проверьте подключение к интернету и попробуйте ещё раз. Если ошибка повторится, напишите нам на fkakron@yandex.ru.</p>
     <button class="btn btn-primary" id="retryBtn" data-t="retryBtn">Попробовать снова</button>
   </div>
 
@@ -369,8 +369,10 @@ ru:{
   thankYouTitle:"Спасибо!",
   thankYouBody:"Анкета отправлена в ФК «Акрон».",
   sendErrorTitle:"Не удалось отправить",
-  sendErrorBody:"Проверьте подключение к интернету и попробуйте ещё раз. Если ошибка повторится, напишите нам на it@fcakron.ru.",
+  sendErrorBody:"Проверьте подключение к интернету и попробуйте ещё раз. Если ошибка повторится, напишите нам на fkakron@yandex.ru.",
   retryBtn:"Попробовать снова",
+  tooBigTitle:"Файлы слишком большие",
+  tooBigBody:"Общий размер вложений не должен превышать 9 МБ. Сейчас: {size} МБ. Удалите или сожмите часть файлов и попробуйте снова.",
   emailSubjectPrefix:"Предконтрактный опросник ФК «Акрон»",
   autosaveNote:"Ответы автоматически сохраняются на этом устройстве по мере заполнения. Прикреплённые файлы приложите ещё раз, если перезагрузите страницу.",
   reqNote:"Поля, отмеченные *, обязательны для заполнения.",
@@ -451,8 +453,10 @@ en:{
   thankYouTitle:"Thank you!",
   thankYouBody:"Your form has been sent to FC Akron.",
   sendErrorTitle:"Couldn't send your form",
-  sendErrorBody:"Please check your internet connection and try again. If this keeps happening, email us at it@fcakron.ru.",
+  sendErrorBody:"Please check your internet connection and try again. If this keeps happening, email us at fkakron@yandex.ru.",
   retryBtn:"Try again",
+  tooBigTitle:"Files are too large",
+  tooBigBody:"Total attachment size must be under 9 MB. Right now it is {size} MB. Please remove or compress some files and try again.",
   emailSubjectPrefix:"FC Akron pre-contract questionnaire",
   autosaveNote:"Your answers are saved automatically on this device as you fill in the form. Please re-attach any files if you reload the page.",
   reqNote:"Fields marked with * are required.",
@@ -533,8 +537,10 @@ es:{
   thankYouTitle:"¡Gracias!",
   thankYouBody:"Tu formulario ha sido enviado al FC Akron.",
   sendErrorTitle:"No se pudo enviar",
-  sendErrorBody:"Comprueba tu conexión a internet e inténtalo de nuevo. Si el error persiste, escríbenos a it@fcakron.ru.",
+  sendErrorBody:"Comprueba tu conexión a internet e inténtalo de nuevo. Si el error persiste, escríbenos a fkakron@yandex.ru.",
   retryBtn:"Intentar de nuevo",
+  tooBigTitle:"Archivos demasiado grandes",
+  tooBigBody:"El tamaño total de los adjuntos no debe superar los 9 MB. Ahora es {size} MB. Elimina o comprime algunos archivos e inténtalo de nuevo.",
   emailSubjectPrefix:"Cuestionario precontractual FC Akron",
   autosaveNote:"Tus respuestas se guardan automáticamente en este dispositivo a medida que completas el formulario. Vuelve a adjuntar los archivos si recargas la página.",
   reqNote:"Los campos marcados con * son obligatorios.",
@@ -615,8 +621,10 @@ pt:{
   thankYouTitle:"Obrigado!",
   thankYouBody:"O seu formulário foi enviado ao FC Akron.",
   sendErrorTitle:"Não foi possível enviar",
-  sendErrorBody:"Verifique a sua ligação à internet e tente novamente. Se o erro persistir, escreva-nos para it@fcakron.ru.",
+  sendErrorBody:"Verifique a sua ligação à internet e tente novamente. Se o erro persistir, escreva-nos para fkakron@yandex.ru.",
   retryBtn:"Tentar novamente",
+  tooBigTitle:"Ficheiros demasiado grandes",
+  tooBigBody:"O tamanho total dos anexos não deve exceder 9 MB. Atualmente: {size} MB. Remova ou comprima alguns ficheiros e tente novamente.",
   emailSubjectPrefix:"Questionário pré-contratual FC Akron",
   autosaveNote:"As suas respostas são guardadas automaticamente neste dispositivo à medida que preenche o formulário. Anexe novamente os ficheiros se recarregar a página.",
   reqNote:"Os campos marcados com * são obrigatórios.",
@@ -697,8 +705,10 @@ sr:{
   thankYouTitle:"Hvala!",
   thankYouBody:"Upitnik je poslat FK Akron.",
   sendErrorTitle:"Slanje nije uspelo",
-  sendErrorBody:"Proverite internet konekciju i pokušajte ponovo. Ako se greška ponovi, pišite nam na it@fcakron.ru.",
+  sendErrorBody:"Proverite internet konekciju i pokušajte ponovo. Ako se greška ponovi, pišite nam na fkakron@yandex.ru.",
   retryBtn:"Pokušaj ponovo",
+  tooBigTitle:"Fajlovi su preveliki",
+  tooBigBody:"Ukupna veličina priloga ne sme preći 9 MB. Trenutno: {size} MB. Uklonite ili smanjite neke fajlove i pokušajte ponovo.",
   emailSubjectPrefix:"Prekontraktni upitnik FK Akron",
   autosaveNote:"Vaši odgovori se automatski čuvaju na ovom uređaju dok popunjavate formular. Priložene fajlove dodajte ponovo ako osvežite stranicu.",
   reqNote:"Polja označena sa * su obavezna.",
@@ -1233,7 +1243,10 @@ async function submitToClub(){
   document.getElementById("steps").innerHTML = "";
   document.getElementById("consentBlock").style.display = "none";
   document.getElementById("thankYou").style.display = "none";
-  document.getElementById("sendError").style.display = "none";
+  const errBoxReset = document.getElementById("sendError");
+  errBoxReset.style.display = "none";
+  errBoxReset.querySelector("h2").textContent = t.sendErrorTitle;
+  errBoxReset.querySelector("p").textContent = t.sendErrorBody;
   document.getElementById("sendStatus").style.display = "block";
   document.querySelector(".nav-bar").style.display = "none";
 
@@ -1255,30 +1268,59 @@ async function submitToClub(){
     });
 
     // Attach the player's files as the ORIGINALS they uploaded — one input per file,
-    // no PDF conversion. Each gets a distinct, descriptive, ASCII-safe filename so
-    // nothing collides in the mailbox.
+    // no conversion. Field names are kept plain ASCII ("attachment", "attachment2", …)
+    // exactly as FormSubmit's own docs show: non-ASCII field names on the file parts
+    // make their parser drop the whole submission silently.
     const dynFiles = document.getElementById("dynamicFiles");
     dynFiles.innerHTML = "";
     const medical = fileStore.medicalDocs || [];
     const gps = fileStore.gpsFile || [];
-    const groups = [
-      { list: medical, tag: "medical", fieldName: "Медицинские документы / Medical documents" },
-      { list: gps, tag: "gps", fieldName: "GPS-данные / GPS data" },
+    const allFiles = [
+      ...medical.map(f=>({file:f, tag:"medical"})),
+      ...gps.map(f=>({file:f, tag:"gps"})),
     ];
-    groups.forEach(group=>{
-      group.list.forEach((file, idx)=>{
-        const ext = (file.name.split(".").pop()||"dat").toLowerCase();
-        const n = group.list.length > 1 ? `-${idx+1}` : "";
-        const newName = `${group.tag}-${slug}${n}.${ext}`;
-        const input = document.createElement("input");
-        input.type = "file";
-        input.name = `${group.fieldName}${group.list.length > 1 ? " " + (idx+1) : ""}`;
-        const dt = new DataTransfer();
-        dt.items.add(new File([file], newName, { type: file.type || "application/octet-stream" }));
-        input.files = dt.files;
-        dynFiles.appendChild(input);
-      });
+
+    // FormSubmit caps ALL attachments at 10MB combined; over the limit it silently
+    // sends nothing at all, so check up front and tell the player what to do.
+    const totalBytes = allFiles.reduce((sum,x)=>sum + (x.file.size||0), 0);
+    if(totalBytes > 9 * 1024 * 1024){
+      const mb = (totalBytes / (1024*1024)).toFixed(1);
+      document.getElementById("sendStatus").style.display = "none";
+      const errBox = document.getElementById("sendError");
+      errBox.querySelector("h2").textContent = t.tooBigTitle;
+      errBox.querySelector("p").textContent = String(t.tooBigBody).replace("{size}", mb);
+      errBox.style.display = "block";
+      document.querySelector(".nav-bar").style.display = "flex";
+      return;
+    }
+
+    const counters = {};
+    allFiles.forEach((item, i)=>{
+      const { file, tag } = item;
+      counters[tag] = (counters[tag] || 0) + 1;
+      const ext = (file.name.split(".").pop()||"dat").toLowerCase();
+      const newName = `${tag}-${slug}-${counters[tag]}.${ext}`;
+      const input = document.createElement("input");
+      input.type = "file";
+      input.name = i === 0 ? "attachment" : `attachment${i+1}`;
+      const dt = new DataTransfer();
+      dt.items.add(new File([file], newName, { type: file.type || "application/octet-stream" }));
+      input.files = dt.files;
+      dynFiles.appendChild(input);
     });
+
+    // list what was attached, so the email body itself records the filenames
+    if(allFiles.length){
+      const inp = document.createElement("input");
+      inp.type = "hidden";
+      inp.name = "Attached files";
+      inp.value = allFiles.map((x,i)=>{
+        const ext = (x.file.name.split(".").pop()||"dat").toLowerCase();
+        const c = allFiles.slice(0,i+1).filter(y=>y.tag===x.tag).length;
+        return `${x.tag}-${slug}-${c}.${ext} (${x.file.name})`;
+      }).join(", ");
+      dyn.appendChild(inp);
+    }
 
     const iframe = document.getElementById("formsubmitTarget");
     const loadedInTime = waitForIframeLoad(iframe, 20000);
