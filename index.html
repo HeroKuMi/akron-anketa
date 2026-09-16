@@ -1193,39 +1193,47 @@ function safeFileName(str){
   return (cleaned || "player").slice(0, 60);
 }
 
-// Full questionnaire, one row per question. Labels are RU-only and trimmed:
-// the previous "русский / srpski" labels doubled every row's width, which is what
-// stretched the email table out of shape. Answers stay exactly as the player typed.
+// Full questionnaire, two monolingual passes stacked one after another (RU
+// block, then SR block) instead of one row per question with both languages
+// crammed into a single field name. A field `name` can't contain a real
+// newline — the browser has to escape it as %0D%0A when it builds the
+// multipart request, and formsubmit's table template doesn't decode that
+// back, which is what produced the "ФИО_(полностью)%0D%0A(...)" garbage.
+// Keeping each row single-language also halves the label width, which is
+// what was stretching the table out.
 function shortLabel(str, max){
   const one = String(str).replace(/\s+/g," ").trim();
   return one.length > max ? one.slice(0, max-1).trim() + "…" : one;
 }
-function buildSummaryFields(){
-  const tRu = T.ru, tSr = T.sr;
+function buildLangBlock(t, consentValue){
   const rows = [];
-  rows.push({ name:"Язык анкеты", value: lang.toUpperCase() });
   STEP_META.forEach((meta,stepIdx)=>{
-    rows.push({ name:`${stepIdx+1}. ${meta.ru[0].toUpperCase()}\n(${meta.sr[0]})`, value:"———" });
+    const stepTitle = t===T.ru ? meta.ru[0] : meta.sr[0];
+    rows.push({ name:`${stepIdx+1}. ${stepTitle.toUpperCase()}`, value:"———" });
     FIELDS.filter(f=>f.step===stepIdx).forEach(f=>{
-      let nameRu, nameSr;
+      let label;
       if(f.type==="pair"){
-        nameRu = f.parts.map(p=>(tRu.fields[p]||{}).label||p).join(" / ");
-        nameSr = f.parts.map(p=>(tSr.fields[p]||{}).label||p).join(" / ");
+        label = f.parts.map(p=>(t.fields[p]||{}).label||p).join(" / ");
       } else {
-        nameRu = (tRu.fields[f.id]||{}).label || f.id;
-        nameSr = (tSr.fields[f.id]||{}).label || f.id;
+        label = (t.fields[f.id]||{}).label || f.id;
       }
-      const val = fmtValueWithT(f, tRu);
-      // Serbian sits on its own line, in parentheses, right under the Russian label —
-      // renders as a real line break in most mail clients; if one collapses it, it
-      // still reads fine as "RU (SR)" run together.
+      const val = fmtValueWithT(f, t);
       rows.push({
-        name: `${shortLabel(nameRu, 60)}\n(${shortLabel(nameSr, 60)})`,
+        name: shortLabel(label, 40),
         value: val && String(val).trim() ? String(val) : "—"
       });
     });
   });
-  rows.push({ name:`Согласие подтверждено\n(Saglasnost potvrđena)`, value: answers.consent ? tRu.yesLabel : tRu.noLabel });
+  rows.push({ name: t===T.ru ? "Согласие подтверждено" : "Saglasnost potvrđena", value: consentValue });
+  return rows;
+}
+function buildSummaryFields(){
+  const rows = [];
+  rows.push({ name:"Язык анкеты", value: lang.toUpperCase() });
+  rows.push({ name:"═════════════", value:"РУССКИЙ" });
+  rows.push(...buildLangBlock(T.ru, answers.consent ? T.ru.yesLabel : T.ru.noLabel));
+  rows.push({ name:"═════════════", value:"SRPSKI" });
+  rows.push(...buildLangBlock(T.sr, answers.consent ? T.sr.yesLabel : T.sr.noLabel));
   return rows;
 }
 
