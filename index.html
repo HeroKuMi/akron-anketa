@@ -1390,16 +1390,6 @@ function clearDebugLine(errBox){
   if(line) line.remove();
 }
 
-function waitForIframeLoad(iframe, timeoutMs){
-  return new Promise((resolve)=>{
-    let done = false;
-    const finish = (ok)=>{ if(done) return; done = true; iframe.removeEventListener("load", onLoad); resolve(ok); };
-    const onLoad = ()=> finish(true);
-    iframe.addEventListener("load", onLoad);
-    setTimeout(()=> finish(false), timeoutMs);
-  });
-}
-
 
 // Total size formsubmit.co accepts across ALL attached files combined
 // (medical documents + GPS files + the generated PDF summary). Kept at
@@ -1487,17 +1477,19 @@ async function submitToClub(){
       fileFields.appendChild(inp);
     });
 
-    const iframe = document.getElementById("formsubmitTarget");
-    const loadedInTime = waitForIframeLoad(iframe, 20000);
+    // We do NOT wait for the iframe's "load" event to decide success
+    // anymore. Evidence from real devices: on iOS (Safari *and* Chrome —
+    // both are WebKit under the hood, so this isn't a Safari-specific
+    // thing), the hidden iframe's "load" event can fail to fire in time
+    // for a multipart file-upload POST even though formsubmit received it
+    // and the email arrives with attachments intact — confirmed directly
+    // (iOS Chrome showed this exact timeout, yet the email showed up).
+    // So that signal was never trustworthy on mobile — treating its
+    // absence as failure was the actual bug, not the submission. Submit
+    // and show the confirmation screen; genuine failures (PDF build
+    // errors, DataTransfer errors, etc.) are still caught by the try/catch
+    // around this whole function and still show the error screen below.
     form.submit();
-    const confirmed = await loadedInTime;
-    if(!confirmed){
-      // The iframe never fired its "load" event within the timeout. Route
-      // into the same error UI below rather than showing a false "thank
-      // you" — see the debug line shown there for the raw reason.
-      throw new Error("iframe_load_timeout");
-    }
-
     document.getElementById("sendStatus").style.display = "none";
     document.getElementById("thankYou").style.display = "block";
     try{ window.localStorage.removeItem(STORAGE_KEY); }catch(e){}
