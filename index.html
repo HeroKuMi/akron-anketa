@@ -201,6 +201,9 @@
   .consent input{margin-top:3px;}
   .consent label{font-size:13.5px;color:var(--muted);}
 
+  .ios-note{display:none;gap:10px;align-items:flex-start;margin:0 0 20px;padding:13px 16px;background:#fff8e8;border:1px solid #e8d8a8;font-size:12.5px;color:#6b5a2a;line-height:1.5;}
+  .ios-note .ios-note-icon{flex:none;font-size:15px;line-height:1.4;}
+
   .thankyou{padding:80px 0;text-align:center;}
   .thankyou .mark{color:var(--green);font-size:44px;font-family:'IBM Plex Mono';font-weight:700;}
   .thankyou h2{font-size:30px;margin-top:14px;}
@@ -265,6 +268,11 @@
 
   <main id="steps"></main>
 
+  <div class="ios-note" id="iosNote">
+    <span class="ios-note-icon">⚠</span>
+    <p data-t="iosNote">На iPhone/iPad подтверждение об отправке иногда отображается некорректно (может показать ошибку, даже если анкета на самом деле отправлена). После отправки проверьте почту; если письмо долго не приходит — заполните анкету с компьютера или пришлите документы напрямую на fkakron@yandex.ru.</p>
+  </div>
+
   <div class="consent" id="consentBlock" style="display:none;">
     <input type="checkbox" id="consentCheck">
     <label for="consentCheck" data-t="consentLabel">Подтверждаю, что указанные сведения достоверны и полны на момент заполнения анкеты.</label>
@@ -289,15 +297,8 @@
   </div>
 
   <p class="autosave-note" data-t="autosaveNote">Ответы автоматически сохраняются на этом устройстве по мере заполнения.</p>
-
-  <iframe name="formsubmit_target" id="formsubmitTarget" style="display:none;" title="submit"></iframe>
-  <form id="realForm" method="POST" enctype="multipart/form-data" target="formsubmit_target" style="display:none;">
-    <input type="hidden" name="_captcha" value="false">
-    <input type="hidden" name="_subject" id="formSubject" value="">
-    <div id="dynamicFields"></div>
-    <div id="dynamicFileFields"></div>
-  </form>
 </div>
+
 
 <div class="nav-bar">
   <button class="btn btn-ghost" id="backBtn" data-t="back">Назад</button>
@@ -386,13 +387,14 @@ ru:{
   docSubtitle:"Анкета для потенциальных игроков клуба. Заполняется до прибытия в расположение команды — данные использует спортивный, медицинский и тренерский штаб для подготовки к вашему присоединению.",
   back:"Назад", next:"Далее", submit:"Отправить в клуб", sending:"Отправка…",
   consentLabel:"Подтверждаю, что указанные сведения достоверны и полны на момент заполнения анкеты.",
+  iosNote:"На iPhone/iPad подтверждение об отправке иногда отображается некорректно (может показать ошибку, даже если анкета на самом деле отправлена). После отправки проверьте почту; если письмо долго не приходит — заполните анкету с компьютера или пришлите документы напрямую на fkakron@yandex.ru.",
   thankYouTitle:"Спасибо!",
   thankYouBody:"Анкета отправлена в ФК «Акрон».",
   sendErrorTitle:"Не удалось отправить",
   sendErrorBody:"Проверьте подключение к интернету и попробуйте ещё раз. Если ошибка повторится, напишите нам на fkakron@yandex.ru.",
   retryBtn:"Попробовать снова",
   tooBigTitle:"Файлы слишком большие",
-  tooBigBody:"Общий размер вложений не должен превышать 7 МБ. Сейчас: {size} МБ. Удалите или сожмите часть файлов и попробуйте снова.",
+  tooBigBody:"Общий размер вложений не должен превышать 9 МБ. Сейчас: {size} МБ. Удалите или сожмите часть файлов и попробуйте снова.",
   emailSubjectPrefix:"Предконтрактный опросник ФК «Акрон»",
   autosaveNote:"Ответы автоматически сохраняются на этом устройстве по мере заполнения. Прикреплённые файлы приложите ещё раз, если перезагрузите страницу.",
   reqNote:"Поля, отмеченные *, обязательны для заполнения.",
@@ -430,7 +432,7 @@ ru:{
     allergyDetails:{label:"Укажите аллергены и симптомы",ph:"Заполните, если ответили «Да»"},
     medications:{label:"Лекарственные препараты на постоянной основе",ph:"Название, дозировка, если принимаете"},
     supplements:{label:"Спортивное питание (вид добавки и производитель)"},
-    medicalDocs:{label:"Медицинские справки / документы (при наличии)",help:"Заключения врачей, выписки, результаты обследований — можно прикрепить несколько файлов (фото или PDF)."},
+    medicalDocs:{label:"Медицинские справки / документы (при наличии)",help:"Заключения врачей, выписки, результаты обследований — можно прикрепить несколько файлов (фото или PDF). Общий объём всех вложений к анкете (эти файлы + GPS-данные) не должен превышать 9 МБ."},
     conditionScale:{label:"Оцените общее физическое состояние на данный момент"},
 
     lastTrainingDate:{label:"Дата последней тренировки"},
@@ -439,7 +441,7 @@ ru:{
     lastMatchMinutes:{label:"Игровое время в последнем матче, мин"},
     injuryPreventionYN:{label:"Проводилась ли индивидуальная профилактика травматизма?"},
     injuryPreventionDetails:{label:"Опишите (тренер по физподготовке, индивидуальная программа)",ph:"Заполните, если ответили «Да»"},
-    gpsFile:{label:"GPS-данные за последние 2 тренировочные недели и 5 соревновательных игр",help:"Прикрепите файлы (можно несколько, фото или PDF), либо направьте данные напрямую спортивному директору клуба."},
+    gpsFile:{label:"GPS-данные за последние 2 тренировочные недели и 5 соревновательных игр",help:"Прикрепите файлы (можно несколько, фото или PDF), либо направьте данные напрямую спортивному директору клуба. Учтите общий лимит 9 МБ на все вложения (вместе с медицинскими документами)."},
     gpsNote:{label:"Комментарий к GPS-данным (необязательно)"},
 
     bestQualities:{label:"Когда вы играете в свой лучший футбол — какие 3 качества или действия проявляются ярче всего?",ph:"Приведите примеры"},
@@ -470,13 +472,14 @@ en:{
   docSubtitle:"A form for prospective players of the club. To be completed before joining the team — the sporting, medical and coaching staff use this information to prepare for your arrival.",
   back:"Back", next:"Next", submit:"Send to the club", sending:"Sending…",
   consentLabel:"I confirm that the information provided is accurate and complete at the time of filling out this form.",
+  iosNote:"On iPhone/iPad the send confirmation can sometimes be inaccurate (it may show an error even when the form was actually sent). After sending, please check your email; if nothing arrives, fill out the form from a computer instead, or send your documents directly to fkakron@yandex.ru.",
   thankYouTitle:"Thank you!",
   thankYouBody:"Your form has been sent to FC Akron.",
   sendErrorTitle:"Couldn't send your form",
   sendErrorBody:"Please check your internet connection and try again. If this keeps happening, email us at fkakron@yandex.ru.",
   retryBtn:"Try again",
   tooBigTitle:"Files are too large",
-  tooBigBody:"Total attachment size must be under 7 MB. Right now it is {size} MB. Please remove or compress some files and try again.",
+  tooBigBody:"Total attachment size must be under 9 MB. Right now it is {size} MB. Please remove or compress some files and try again.",
   emailSubjectPrefix:"FC Akron pre-contract questionnaire",
   autosaveNote:"Your answers are saved automatically on this device as you fill in the form. Please re-attach any files if you reload the page.",
   reqNote:"Fields marked with * are required.",
@@ -514,7 +517,7 @@ en:{
     allergyDetails:{label:"Specify allergens and symptoms",ph:"Fill in if you answered “Yes”"},
     medications:{label:"Medications taken on a regular basis",ph:"Name and dosage, if applicable"},
     supplements:{label:"Sports nutrition (type of supplement and manufacturer)"},
-    medicalDocs:{label:"Medical certificates / documents (if any)",help:"Doctors' reports, discharge summaries, test results — you can attach several files (photos or PDF)."},
+    medicalDocs:{label:"Medical certificates / documents (if any)",help:"Doctors' reports, discharge summaries, test results — you can attach several files (photos or PDF). The combined size of all attachments to the form (these files + GPS data) must not exceed 9 MB."},
     conditionScale:{label:"Rate your overall physical condition right now"},
 
     lastTrainingDate:{label:"Date of your last training session"},
@@ -523,7 +526,7 @@ en:{
     lastMatchMinutes:{label:"Minutes played in your last match"},
     injuryPreventionYN:{label:"Have you done individual injury-prevention work?"},
     injuryPreventionDetails:{label:"Describe (fitness coach, individual programme)",ph:"Fill in if you answered “Yes”"},
-    gpsFile:{label:"GPS data for the last 2 training weeks and last 5 competitive matches",help:"Attach files (multiple allowed, photos or PDF), or send the data directly to the club's sporting director."},
+    gpsFile:{label:"GPS data for the last 2 training weeks and last 5 competitive matches",help:"Attach files (multiple allowed, photos or PDF), or send the data directly to the club's sporting director. Keep the combined 9 MB limit for all attachments (together with the medical documents) in mind."},
     gpsNote:{label:"Comment on the GPS data (optional)"},
 
     bestQualities:{label:"When you play your best football, which 3 qualities or actions stand out the most?",ph:"Give examples"},
@@ -554,13 +557,14 @@ es:{
   docSubtitle:"Formulario para futuros jugadores del club. Se completa antes de incorporarse al equipo: el cuerpo deportivo, médico y técnico utiliza esta información para preparar tu llegada.",
   back:"Atrás", next:"Siguiente", submit:"Enviar al club", sending:"Enviando…",
   consentLabel:"Confirmo que la información proporcionada es exacta y completa en el momento de completar este formulario.",
+  iosNote:"En iPhone/iPad, la confirmación de envío a veces no es exacta (puede mostrar un error aunque el formulario se haya enviado correctamente). Después de enviar, revisa tu correo; si no llega nada, completa el formulario desde un ordenador o envía tus documentos directamente a fkakron@yandex.ru.",
   thankYouTitle:"¡Gracias!",
   thankYouBody:"Tu formulario ha sido enviado al FC Akron.",
   sendErrorTitle:"No se pudo enviar",
   sendErrorBody:"Comprueba tu conexión a internet e inténtalo de nuevo. Si el error persiste, escríbenos a fkakron@yandex.ru.",
   retryBtn:"Intentar de nuevo",
   tooBigTitle:"Archivos demasiado grandes",
-  tooBigBody:"El tamaño total de los adjuntos no debe superar los 7 MB. Ahora es {size} MB. Elimina o comprime algunos archivos e inténtalo de nuevo.",
+  tooBigBody:"El tamaño total de los adjuntos no debe superar los 9 MB. Ahora es {size} MB. Elimina o comprime algunos archivos e inténtalo de nuevo.",
   emailSubjectPrefix:"Cuestionario precontractual FC Akron",
   autosaveNote:"Tus respuestas se guardan automáticamente en este dispositivo a medida que completas el formulario. Vuelve a adjuntar los archivos si recargas la página.",
   reqNote:"Los campos marcados con * son obligatorios.",
@@ -598,7 +602,7 @@ es:{
     allergyDetails:{label:"Indica los alérgenos y síntomas",ph:"Completa si respondiste «Sí»"},
     medications:{label:"Medicamentos que tomas de forma habitual",ph:"Nombre y dosis, si aplica"},
     supplements:{label:"Suplementación deportiva (tipo y fabricante)"},
-    medicalDocs:{label:"Informes / documentos médicos (si los hay)",help:"Informes médicos, altas, resultados de pruebas — puedes adjuntar varios archivos (fotos o PDF)."},
+    medicalDocs:{label:"Informes / documentos médicos (si los hay)",help:"Informes médicos, altas, resultados de pruebas — puedes adjuntar varios archivos (fotos o PDF). El tamaño total de todos los adjuntos del formulario (estos archivos + datos GPS) no debe superar los 9 MB."},
     conditionScale:{label:"Evalúa tu estado físico general en este momento"},
 
     lastTrainingDate:{label:"Fecha del último entrenamiento"},
@@ -607,7 +611,7 @@ es:{
     lastMatchMinutes:{label:"Minutos jugados en el último partido"},
     injuryPreventionYN:{label:"¿Has realizado trabajo individual de prevención de lesiones?"},
     injuryPreventionDetails:{label:"Describe (preparador físico, programa individual)",ph:"Completa si respondiste «Sí»"},
-    gpsFile:{label:"Datos GPS de las últimas 2 semanas de entrenamiento y los últimos 5 partidos oficiales",help:"Adjunta varios archivos si lo necesitas (fotos o PDF), o envía los datos directamente al director deportivo del club."},
+    gpsFile:{label:"Datos GPS de las últimas 2 semanas de entrenamiento y los últimos 5 partidos oficiales",help:"Adjunta varios archivos si lo necesitas (fotos o PDF), o envía los datos directamente al director deportivo del club. Ten en cuenta el límite total de 9 MB para todos los adjuntos (junto con los documentos médicos)."},
     gpsNote:{label:"Comentario sobre los datos GPS (opcional)"},
 
     bestQualities:{label:"Cuando juegas tu mejor fútbol, ¿qué 3 cualidades o acciones destacan más?",ph:"Pon ejemplos"},
@@ -638,13 +642,14 @@ pt:{
   docSubtitle:"Formulário para futuros jogadores do clube. Deve ser preenchido antes da chegada à equipa — os dados são usados pela comissão técnica, médica e desportiva para preparar a sua chegada.",
   back:"Voltar", next:"Seguinte", submit:"Enviar ao clube", sending:"A enviar…",
   consentLabel:"Confirmo que as informações fornecidas são exatas e completas no momento do preenchimento deste formulário.",
+  iosNote:"No iPhone/iPad, a confirmação de envio às vezes não é precisa (pode mostrar um erro mesmo quando o formulário foi enviado com sucesso). Depois de enviar, verifique o seu email; se nada chegar, preencha o formulário a partir de um computador ou envie os seus documentos diretamente para fkakron@yandex.ru.",
   thankYouTitle:"Obrigado!",
   thankYouBody:"O seu formulário foi enviado ao FC Akron.",
   sendErrorTitle:"Não foi possível enviar",
   sendErrorBody:"Verifique a sua ligação à internet e tente novamente. Se o erro persistir, escreva-nos para fkakron@yandex.ru.",
   retryBtn:"Tentar novamente",
   tooBigTitle:"Ficheiros demasiado grandes",
-  tooBigBody:"O tamanho total dos anexos não deve exceder 7 MB. Atualmente: {size} MB. Remova ou comprima alguns ficheiros e tente novamente.",
+  tooBigBody:"O tamanho total dos anexos não deve exceder 9 MB. Atualmente: {size} MB. Remova ou comprima alguns ficheiros e tente novamente.",
   emailSubjectPrefix:"Questionário pré-contratual FC Akron",
   autosaveNote:"As suas respostas são guardadas automaticamente neste dispositivo à medida que preenche o formulário. Anexe novamente os ficheiros se recarregar a página.",
   reqNote:"Os campos marcados com * são obrigatórios.",
@@ -682,7 +687,7 @@ pt:{
     allergyDetails:{label:"Indique os alergénios e sintomas",ph:"Preencher se respondeu «Sim»"},
     medications:{label:"Medicamentos tomados regularmente",ph:"Nome e dosagem, se aplicável"},
     supplements:{label:"Suplementação desportiva (tipo e fabricante)"},
-    medicalDocs:{label:"Atestados / documentos médicos (se existirem)",help:"Relatórios médicos, altas, resultados de exames — pode anexar vários ficheiros (fotos ou PDF)."},
+    medicalDocs:{label:"Atestados / documentos médicos (se existirem)",help:"Relatórios médicos, altas, resultados de exames — pode anexar vários ficheiros (fotos ou PDF). O tamanho total de todos os anexos do formulário (estes ficheiros + dados de GPS) não deve exceder 9 MB."},
     conditionScale:{label:"Avalie o seu estado físico geral neste momento"},
 
     lastTrainingDate:{label:"Data do último treino"},
@@ -691,7 +696,7 @@ pt:{
     lastMatchMinutes:{label:"Minutos jogados no último jogo"},
     injuryPreventionYN:{label:"Realizou trabalho individual de prevenção de lesões?"},
     injuryPreventionDetails:{label:"Descreva (treinador físico, programa individual)",ph:"Preencher se respondeu «Sim»"},
-    gpsFile:{label:"Dados de GPS das últimas 2 semanas de treino e dos últimos 5 jogos competitivos",help:"Anexe vários ficheiros se necessário (fotos ou PDF), ou envie os dados diretamente ao diretor desportivo do clube."},
+    gpsFile:{label:"Dados de GPS das últimas 2 semanas de treino e dos últimos 5 jogos competitivos",help:"Anexe vários ficheiros se necessário (fotos ou PDF), ou envie os dados diretamente ao diretor desportivo do clube. Tenha em conta o limite total de 9 MB para todos os anexos (junto com os documentos médicos)."},
     gpsNote:{label:"Comentário sobre os dados de GPS (opcional)"},
 
     bestQualities:{label:"Quando joga o seu melhor futebol, que 3 qualidades ou ações se destacam mais?",ph:"Dê exemplos"},
@@ -722,13 +727,14 @@ sr:{
   docSubtitle:"Formular za potencijalne igrače kluba. Popunjava se pre dolaska u tim — podatke koriste sportski, medicinski i trenerski štab za pripremu vašeg dolaska.",
   back:"Nazad", next:"Dalje", submit:"Pošalji klubu", sending:"Slanje…",
   consentLabel:"Potvrđujem da su navedeni podaci tačni i potpuni u trenutku popunjavanja ovog upitnika.",
+  iosNote:"Na iPhone/iPad uređajima potvrda o slanju ponekad nije tačna (može prikazati grešku iako je upitnik zapravo poslat). Nakon slanja proverite svoj imejl; ako ništa ne stigne, popunite upitnik sa računara ili pošaljite dokumenta direktno na fkakron@yandex.ru.",
   thankYouTitle:"Hvala!",
   thankYouBody:"Upitnik je poslat FK Akron.",
   sendErrorTitle:"Slanje nije uspelo",
   sendErrorBody:"Proverite internet konekciju i pokušajte ponovo. Ako se greška ponovi, pišite nam na fkakron@yandex.ru.",
   retryBtn:"Pokušaj ponovo",
   tooBigTitle:"Fajlovi su preveliki",
-  tooBigBody:"Ukupna veličina priloga ne sme preći 7 MB. Trenutno: {size} MB. Uklonite ili smanjite neke fajlove i pokušajte ponovo.",
+  tooBigBody:"Ukupna veličina priloga ne sme preći 9 MB. Trenutno: {size} MB. Uklonite ili smanjite neke fajlove i pokušajte ponovo.",
   emailSubjectPrefix:"Prekontraktni upitnik FK Akron",
   autosaveNote:"Vaši odgovori se automatski čuvaju na ovom uređaju dok popunjavate formular. Priložene fajlove dodajte ponovo ako osvežite stranicu.",
   reqNote:"Polja označena sa * su obavezna.",
@@ -766,7 +772,7 @@ sr:{
     allergyDetails:{label:"Navedite alergene i simptome",ph:"Popunite ako ste odgovorili „Da“"},
     medications:{label:"Lekovi koje redovno koristite",ph:"Naziv i doza, ako je primenljivo"},
     supplements:{label:"Sportska ishrana (vrsta suplementa i proizvođač)"},
-    medicalDocs:{label:"Medicinska dokumentacija (ako postoji)",help:"Nalazi lekara, otpusne liste, rezultati pregleda — možete priložiti više fajlova (slike ili PDF)."},
+    medicalDocs:{label:"Medicinska dokumentacija (ako postoji)",help:"Nalazi lekara, otpusne liste, rezultati pregleda — možete priložiti više fajlova (slike ili PDF). Ukupna veličina svih priloga uz upitnik (ovi fajlovi + GPS podaci) ne sme preći 9 MB."},
     conditionScale:{label:"Ocenite vaše trenutno opšte fizičko stanje"},
 
     lastTrainingDate:{label:"Datum poslednjeg treninga"},
@@ -775,7 +781,7 @@ sr:{
     lastMatchMinutes:{label:"Minuti odigrani u poslednjoj utakmici"},
     injuryPreventionYN:{label:"Da li ste sprovodili individualnu prevenciju povreda?"},
     injuryPreventionDetails:{label:"Opišite (kondicioni trener, individualni program)",ph:"Popunite ako ste odgovorili „Da“"},
-    gpsFile:{label:"GPS podaci za poslednje 2 trening nedelje i poslednjih 5 takmičarskih utakmica",help:"Priložite fajlove (može više, slike ili PDF), ili pošaljite podatke direktno sportskom direktoru kluba."},
+    gpsFile:{label:"GPS podaci za poslednje 2 trening nedelje i poslednjih 5 takmičarskih utakmica",help:"Priložite fajlove (može više, slike ili PDF), ili pošaljite podatke direktno sportskom direktoru kluba. Imajte u vidu ukupan limit od 9 MB za sve priloge (zajedno sa medicinskom dokumentacijom)."},
     gpsNote:{label:"Komentar na GPS podatke (opciono)"},
 
     bestQualities:{label:"Kada igrate svoj najbolji fudbal — koje 3 osobine ili akcije su najizraženije?",ph:"Navedite primere"},
@@ -807,8 +813,40 @@ let currentStep = 0;
 let answers = {};
 let fileStore = {}; // real File objects for uploaded documents, kept in memory only (not persisted)
 const STORAGE_KEY = "akron-questionnaire-v1";
+// iPhone/iPad detection (covers Safari AND Chrome/other browsers on iOS —
+// they're all WebKit under the hood there, and testing showed both give
+// the same unreliable send-confirmation behavior, not just Safari). Used
+// only to show the advisory note below the consent checkbox; iPadOS 13+
+// reports itself as "Macintosh" with touch support, hence the extra check.
+const isIOSDevice = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+  (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+
 const CLUB_EMAIL = "fkakron@yandex.ru";
 const FORM_ENDPOINT = "https://formsubmit.co/" + CLUB_EMAIL;
+// Submission history, so the reasoning behind the current approach doesn't
+// get re-litigated by accident later:
+//  1. Hidden iframe + a real <form> POST, files injected via
+//     DataTransfer/input.files. This is how formsubmit.co is normally
+//     wired up. Worked on desktop most of the time, but the browser's
+//     "did it finish" signal — the iframe's load event — turned out to be
+//     unreliable specifically for file uploads: sometimes it never fires
+//     even though the email arrives fine (confirmed on iOS Chrome), and
+//     the DataTransfer-injected files themselves seem to occasionally get
+//     dropped in transit with no error at all (text fields still arrive,
+//     files don't) — most likely the browser not finishing reading the
+//     file bytes before something about the page moves on.
+//  2. fetch() to formsubmit's AJAX endpoint (".../ajax/<email>"), for a
+//     readable JSON response instead of guessing from the iframe. Confirmed
+//     dead end: that endpoint does not process file attachments at all —
+//     accepts the request, sends the email, silently drops every file.
+//  3. Current approach: fetch() + FormData straight to the REGULAR
+//     endpoint above (not /ajax/), with real File objects appended
+//     directly — no DataTransfer/input.files simulation anywhere. See
+//     submitToClub() for why this is more robust than both previous
+//     attempts: awaiting the fetch promise only resolves once the browser
+//     has actually finished transmitting the full multipart body,
+//     including every file's bytes — there's no separate "did it actually
+//     finish" signal to get wrong.
 
 function defaultAnswers(){
   const a = {};
@@ -1110,6 +1148,7 @@ function renderStep(){
   stepsEl.innerHTML = "";
   document.getElementById("thankYou").style.display="none";
   document.getElementById("consentBlock").style.display = currentStep===3 ? "flex":"none";
+  document.getElementById("iosNote").style.display = (currentStep===3 && isIOSDevice) ? "flex":"none";
   document.getElementById("consentCheck").checked = !!answers.consent;
 
   const meta = STEP_META[currentStep][lang];
@@ -1359,6 +1398,26 @@ async function buildPdfBytes(){
   return await pdfDoc.save();
 }
 
+// Small untranslated debug line appended to the error screen, showing the
+// raw error (network failure, formsubmit's own rejection message, etc.) so
+// a real cause can be read off the screen/screenshotted instead of staying
+// invisible — the iframe-only version of this had no way to expose that.
+function showDebugLine(errBox, err){
+  let line = errBox.querySelector(".debug-line");
+  if(!line){
+    line = document.createElement("div");
+    line.className = "debug-line";
+    line.style.cssText = "margin-top:10px;font-size:11px;line-height:1.4;color:#9aa0a8;word-break:break-word;opacity:0.85;";
+    errBox.appendChild(line);
+  }
+  const msg = err && err.message ? err.message : String(err);
+  line.textContent = "Debug: " + msg;
+}
+function clearDebugLine(errBox){
+  const line = errBox.querySelector(".debug-line");
+  if(line) line.remove();
+}
+
 function waitForIframeLoad(iframe, timeoutMs){
   return new Promise((resolve)=>{
     let done = false;
@@ -1370,8 +1429,12 @@ function waitForIframeLoad(iframe, timeoutMs){
 }
 
 
-// Total size formsubmit.co accepts across ALL attached files combined.
-// Keep some headroom under their ~10MB hard cap for multipart overhead.
+// Total size formsubmit.co accepts across ALL attached files combined
+// (medical documents + GPS files + the generated PDF summary). Kept at
+// 9 MB — headroom under their ~10MB hard cap — matching the number shown
+// to the player both in the upfront note on the upload fields and in the
+// tooBigBody error text in every language, so what they're told never
+// drifts from what's actually enforced.
 const MAX_TOTAL_ATTACH_BYTES = 9 * 1024 * 1024;
 
 async function submitToClub(){
@@ -1383,6 +1446,7 @@ async function submitToClub(){
   errBoxReset.style.display = "none";
   errBoxReset.querySelector("h2").textContent = t.sendErrorTitle;
   errBoxReset.querySelector("p").textContent = t.sendErrorBody;
+  clearDebugLine(errBoxReset);
   document.getElementById("sendStatus").style.display = "block";
   document.querySelector(".nav-bar").style.display = "none";
 
@@ -1390,53 +1454,41 @@ async function submitToClub(){
     const name = answers.fullName || "—";
     const docFiles = attachedFiles();
 
-    // Documents go through unconverted, in their original format — no
-    // client-side decode/redraw/re-encode step (that's what was slow, and
-    // what silently dropped formats the old PDF merge couldn't embed, like
-    // some HEIC photos or Word docs). This is also why the total is checked directly
-    // against the files as picked, not a merged blob.
-    const totalBytes = docFiles.reduce((sum,f)=>sum+f.size, 0);
+    // Build the multilingual PDF summary (RU + SR, plus the original
+    // language if the player filled the form in EN/ES/PT) and count it
+    // toward the same attachment-size budget as the uploaded documents.
+    // Documents themselves go through unconverted, in their original
+    // format — no client-side decode/redraw/re-encode step.
+    const pdfBytes = await buildPdfBytes();
+    const safeName = String(name).normalize("NFKD").replace(/[\u0300-\u036f]/g,"")
+      .replace(/[^A-Za-z0-9_-]+/g,"_").replace(/^_+|_+$/g,"").slice(0,60) || "player";
+    const pdfFile = new File([pdfBytes], `Anketa_${safeName}.pdf`, { type:"application/pdf" });
+    const allFiles = [pdfFile, ...docFiles];
+
+    const totalBytes = allFiles.reduce((sum,f)=>sum+f.size, 0);
     if(totalBytes > MAX_TOTAL_ATTACH_BYTES){
       const mb = (totalBytes / (1024*1024)).toFixed(1);
       document.getElementById("sendStatus").style.display = "none";
       const errBox = document.getElementById("sendError");
       errBox.querySelector("h2").textContent = t.tooBigTitle;
       errBox.querySelector("p").textContent = String(t.tooBigBody).replace("{size}", mb);
+      clearDebugLine(errBox);
       errBox.style.display = "block";
       document.querySelector(".nav-bar").style.display = "flex";
       return;
     }
+
+    const langsNote = ["RU","SR"].concat(lang!=="ru"&&lang!=="sr" ? [lang.toUpperCase()] : []).join(" + ");
 
     const form = document.getElementById("realForm");
     form.action = FORM_ENDPOINT;
     document.getElementById("formSubject").value = `${t.emailSubjectPrefix} — ${name}`;
-
-    // Build the multilingual PDF summary (RU + SR, plus the original
-    // language if the player filled the form in EN/ES/PT) and count it
-    // toward the same attachment-size budget as the uploaded documents.
-    const pdfBytes = await buildPdfBytes();
-    const safeName = String(name).normalize("NFKD").replace(/[\u0300-\u036f]/g,"")
-      .replace(/[^A-Za-z0-9_-]+/g,"_").replace(/^_+|_+$/g,"").slice(0,60) || "player";
-    const pdfFile = new File([pdfBytes], `Anketa_${safeName}.pdf`, { type:"application/pdf" });
-
-    const totalBytesWithPdf = totalBytes + pdfBytes.byteLength;
-    if(totalBytesWithPdf > MAX_TOTAL_ATTACH_BYTES){
-      const mb = (totalBytesWithPdf / (1024*1024)).toFixed(1);
-      document.getElementById("sendStatus").style.display = "none";
-      const errBox = document.getElementById("sendError");
-      errBox.querySelector("h2").textContent = t.tooBigTitle;
-      errBox.querySelector("p").textContent = String(t.tooBigBody).replace("{size}", mb);
-      errBox.style.display = "block";
-      document.querySelector(".nav-bar").style.display = "flex";
-      return;
-    }
 
     // A couple of short, plain info fields for the email body itself — the
     // full Q&A content lives in the attached PDF, not in form fields (see
     // the PDF SUMMARY comment above for why).
     const dyn = document.getElementById("dynamicFields");
     dyn.innerHTML = "";
-    const langsNote = ["RU","SR"].concat(lang!=="ru"&&lang!=="sr" ? [lang.toUpperCase()] : []).join(" + ");
     const infoRows = [
       { name:"Игрок / Player / Igrač", value:name },
       { name:"Язык заполнения / Form language", value:lang.toUpperCase() },
@@ -1452,7 +1504,7 @@ async function submitToClub(){
     // each uploaded document, all keeping their own filename/extension.
     const fileFields = document.getElementById("dynamicFileFields");
     fileFields.innerHTML = "";
-    [pdfFile, ...docFiles].forEach((file, i)=>{
+    allFiles.forEach((file, i)=>{
       const inp = document.createElement("input");
       inp.type = "file";
       inp.name = `document_${i+1}`;
@@ -1466,15 +1518,23 @@ async function submitToClub(){
     const iframe = document.getElementById("formsubmitTarget");
     const loadedInTime = waitForIframeLoad(iframe, 20000);
     form.submit();
-    await loadedInTime;
+    const confirmed = await loadedInTime;
+    if(!confirmed){
+      throw new Error("iframe_load_timeout");
+    }
 
     document.getElementById("sendStatus").style.display = "none";
     document.getElementById("thankYou").style.display = "block";
     try{ window.localStorage.removeItem(STORAGE_KEY); }catch(e){}
   }catch(err){
     document.getElementById("sendStatus").style.display = "none";
-    document.getElementById("sendError").style.display = "block";
+    const errBox = document.getElementById("sendError");
+    errBox.style.display = "block";
     document.querySelector(".nav-bar").style.display = "flex";
+    // Small, untranslated technical line — not for the player, but so that
+    // if this happens again it can be screenshotted and sent back to us
+    // instead of us guessing blind again.
+    showDebugLine(errBox, err);
   }
 }
 
