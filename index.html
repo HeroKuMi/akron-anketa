@@ -1359,15 +1359,21 @@ async function buildPdfBytes(){
   return await pdfDoc.save();
 }
 
+function waitForIframeLoad(iframe, timeoutMs){
+  return new Promise((resolve)=>{
+    let done = false;
+    const finish = (ok)=>{ if(done) return; done = true; iframe.removeEventListener("load", onLoad); resolve(ok); };
+    const onLoad = ()=> finish(true);
+    iframe.addEventListener("load", onLoad);
+    setTimeout(()=> finish(false), timeoutMs);
+  });
+}
+
+
 // Total size formsubmit.co accepts across ALL attached files combined.
 // Keep some headroom under their ~10MB hard cap for multipart overhead.
 const MAX_TOTAL_ATTACH_BYTES = 9 * 1024 * 1024;
 
-// iOS Safari has had regressions around multipart/form-data file inputs.
-// To avoid relying on programmatically assigning File objects to
-// <input type="file">, we submit FormData directly to FormSubmit's AJAX
-// endpoint. User-selected files are converted to fresh Blob objects first;
-// this also avoids Safari/WebKit issues with disk-backed Files.
 async function submitToClub(){
   const t = tr();
   document.getElementById("steps").innerHTML = "";
@@ -1384,6 +1390,11 @@ async function submitToClub(){
     const name = answers.fullName || "—";
     const docFiles = attachedFiles();
 
+    // Documents go through unconverted, in their original format — no
+    // client-side decode/redraw/re-encode step (that's what was slow, and
+    // what silently dropped formats the old PDF merge couldn't embed, like
+    // some HEIC photos or Word docs). This is also why the total is checked directly
+    // against the files as picked, not a merged blob.
     const totalBytes = docFiles.reduce((sum,f)=>sum+f.size, 0);
     if(totalBytes > MAX_TOTAL_ATTACH_BYTES){
       const mb = (totalBytes / (1024*1024)).toFixed(1);
@@ -1396,13 +1407,17 @@ async function submitToClub(){
       return;
     }
 
+    const form = document.getElementById("realForm");
+    form.action = FORM_ENDPOINT;
     document.getElementById("formSubject").value = `${t.emailSubjectPrefix} — ${name}`;
 
-    // Build the multilingual PDF summary.
+    // Build the multilingual PDF summary (RU + SR, plus the original
+    // language if the player filled the form in EN/ES/PT) and count it
+    // toward the same attachment-size budget as the uploaded documents.
     const pdfBytes = await buildPdfBytes();
     const safeName = String(name).normalize("NFKD").replace(/[\u0300-\u036f]/g,"")
       .replace(/[^A-Za-z0-9_-]+/g,"_").replace(/^_+|_+$/g,"").slice(0,60) || "player";
-    const pdfName = `Anketa_${safeName}.pdf`;
+    const pdfFile = new File([pdfBytes], `Anketa_${safeName}.pdf`, { type:"application/pdf" });
 
     const totalBytesWithPdf = totalBytes + pdfBytes.byteLength;
     if(totalBytesWithPdf > MAX_TOTAL_ATTACH_BYTES){
@@ -1416,61 +1431,47 @@ async function submitToClub(){
       return;
     }
 
-    const langsNote = ["RU","SR"].concat(
-      lang!=="ru"&&lang!=="sr" ? [lang.toUpperCase()] : []
-    ).join(" + ");
-
-    // Build multipart/form-data manually. Do NOT set Content-Type:
-    // fetch() adds the correct multipart boundary automatically.
-    const fd = new FormData();
-    fd.append("_captcha", "false");
-    fd.append("_subject", `${t.emailSubjectPrefix} — ${name}`);
-    fd.append("Игрок / Player / Igrač", name);
-    fd.append("Язык заполнения / Form language", lang.toUpperCase());
-    fd.append(
-      "Анкета / Questionnaire",
-      `См. вложение ${pdfName} (${langsNote}) / See attached PDF (${langsNote})`
-    );
-
-    // The generated PDF is memory-backed, so append it as a Blob with an
-    // explicit filename instead of creating a File and assigning it to
-    // <input type="file">.
-    fd.append(
-      "document_1",
-      new Blob([pdfBytes], {type:"application/pdf"}),
-      pdfName
-    );
-
-    // Safari/WebKit can have trouble sending the original disk-backed File
-    // object. Read each selected file and wrap its bytes in a fresh Blob.
-    for(let i=0; i<docFiles.length; i++){
-      const file = docFiles[i];
-      const bytes = await file.arrayBuffer();
-      const blob = new Blob([bytes], {type:file.type || "application/octet-stream"});
-      fd.append(`document_${i+2}`, blob, file.name);
-    }
-
-    const response = await fetch(FORM_ENDPOINT.replace(
-      "https://formsubmit.co/",
-      "https://formsubmit.co/ajax/"
-    ), {
-      method: "POST",
-      body: fd,
-      headers: { "Accept": "application/json" }
+    // A couple of short, plain info fields for the email body itself — the
+    // full Q&A content lives in the attached PDF, not in form fields (see
+    // the PDF SUMMARY comment above for why).
+    const dyn = document.getElementById("dynamicFields");
+    dyn.innerHTML = "";
+    const langsNote = ["RU","SR"].concat(lang!=="ru"&&lang!=="sr" ? [lang.toUpperCase()] : []).join(" + ");
+    const infoRows = [
+      { name:"Игрок / Player / Igrač", value:name },
+      { name:"Язык заполнения / Form language", value:lang.toUpperCase() },
+      { name:"Анкета / Questionnaire", value:`См. вложение Anketa_${safeName}.pdf (${langsNote}) / See attached PDF (${langsNote})` },
+    ];
+    infoRows.forEach(row=>{
+      const inp = document.createElement("input");
+      inp.type = "hidden"; inp.name = row.name; inp.value = row.value;
+      dyn.appendChild(inp);
     });
 
-    let result = null;
-    try { result = await response.json(); } catch(e) {}
+    // One real file input per attachment — the PDF summary first, then
+    // each uploaded document, all keeping their own filename/extension.
+    const fileFields = document.getElementById("dynamicFileFields");
+    fileFields.innerHTML = "";
+    [pdfFile, ...docFiles].forEach((file, i)=>{
+      const inp = document.createElement("input");
+      inp.type = "file";
+      inp.name = `document_${i+1}`;
+      inp.style.display = "none";
+      const dt = new DataTransfer();
+      dt.items.add(file);
+      inp.files = dt.files;
+      fileFields.appendChild(inp);
+    });
 
-    if(!response.ok || (result && String(result.success).toLowerCase()==="false")){
-      throw new Error(result && result.message ? result.message : `HTTP ${response.status}`);
-    }
+    const iframe = document.getElementById("formsubmitTarget");
+    const loadedInTime = waitForIframeLoad(iframe, 20000);
+    form.submit();
+    await loadedInTime;
 
     document.getElementById("sendStatus").style.display = "none";
     document.getElementById("thankYou").style.display = "block";
     try{ window.localStorage.removeItem(STORAGE_KEY); }catch(e){}
   }catch(err){
-    console.error("Questionnaire submission failed:", err);
     document.getElementById("sendStatus").style.display = "none";
     document.getElementById("sendError").style.display = "block";
     document.querySelector(".nav-bar").style.display = "flex";
