@@ -268,6 +268,14 @@
 
   <main id="steps"></main>
 
+  <iframe name="formsubmit_target" id="formsubmitTarget" style="display:none;" title="submit"></iframe>
+  <form id="realForm" method="POST" enctype="multipart/form-data" target="formsubmit_target" style="display:none;">
+    <input type="hidden" name="_captcha" value="false">
+    <input type="hidden" name="_subject" id="formSubject" value="">
+    <div id="dynamicFields"></div>
+    <div id="dynamicFileFields"></div>
+  </form>
+
   <div class="ios-note" id="iosNote">
     <span class="ios-note-icon">⚠</span>
     <p data-t="iosNote">На iPhone/iPad подтверждение об отправке иногда отображается некорректно (может показать ошибку, даже если анкета на самом деле отправлена). После отправки проверьте почту; если письмо долго не приходит — заполните анкету с компьютера или пришлите документы напрямую на fkakron@yandex.ru.</p>
